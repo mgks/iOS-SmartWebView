@@ -2,13 +2,13 @@
 
 <p>
   <a href="#features"><img alt="Variant" src="https://img.shields.io/badge/language-Swift-orange.svg"></a>
-  <a href="https://github.com/mgks/Android-SmartWebView/releases"><img alt="Based on" src="https://img.shields.io/github/v/release/mgks/android-smartwebview"></a>
-  <a href="https://github.com/mgks/Android-SmartWebView/blob/master/LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/mgks/android-smartwebview"></a>
+  <a href="https://github.com/mgks/iOS-SmartWebView/releases"><img alt="Releases" src="https://img.shields.io/github/v/release/mgks/iOS-SmartWebView"></a>
+  <a href="https://github.com/mgks/iOS-SmartWebView/blob/master/LICENSE"><img alt="GitHub License" src="https://img.shields.io/github/license/mgks/iOS-SmartWebView"></a>
 </p>
 
-**iOS Smart WebView** is a modern, open-source solution for building advanced hybrid iOS apps, designed as a direct parallel to the popular [Android Smart WebView](https://github.com/mgks/Android-SmartWebView) project. It allows you to effortlessly extend your app with plugins, native features, and a customizable UI, all configured from a single properties file.
+**iOS Smart WebView** is a modern, open-source solution for building advanced hybrid iOS apps, designed as a direct parallel to the already established [Android Smart WebView](https://github.com/mgks/Android-SmartWebView) project. It allows you to effortlessly extend your app with plugins, native features, and a customizable UI, all configured from a single properties file.
 
-**[DOCUMENTATION](https://docs.mgks.dev/smart-webview/)** | **[GET PREMIUM PLUGINS](https://github.com/sponsors/mgks/sponsorships?sponsor=mgks&tier_id=468838)** | **[ISSUES](https://github.com/mgks/Android-SmartWebView/issues)**
+**[DOCUMENTATION](https://docs.mgks.dev/smart-webview/)** | **[GET PREMIUM PLUGINS](https://github.com/sponsors/mgks/sponsorships?sponsor=mgks&tier_id=468838)** | **[ISSUES](https://github.com/mgks/iOS-SmartWebView/issues)**
 
 ## Core Features
 
@@ -26,7 +26,7 @@
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/YOUR_REPO/iOS-SmartWebView.git
+    git clone https://github.com/mgks/iOS-SmartWebView.git
     ```
 2.  **Open in Xcode:**
     *   Open the `.xcodeproj` file.
@@ -36,7 +36,7 @@
 4.  **Add `GoogleService-Info.plist` (Optional):**
     *   If using Firebase services (like Push Notifications), obtain your `GoogleService-Info.plist` file from the Firebase console and place it in the `Resources/` group in Xcode.
 5.  **Build & Run:**
-    *   Select a simulator or connected device and press the Run (▶) button.
+    *   Select a simulator or connected device and press the Run `▶` button.
 
 ## Basic Configuration
 
