@@ -65,9 +65,9 @@ class Playground: PluginInterface {
           toggleBtn.onclick = () => { panel.classList.toggle('visible'); };
           
           const buttons = [
-            { text: 'Show Toast', action: `window.Toast.show('Hello from Playground!')`, plugin: 'Toast' },
-            { text: 'Show Dialog', action: `window.Dialog.show({ title: 'Test', message: 'This is a native dialog.' }, res => console.log(res))`, plugin: 'Dialog' },
-            { text: 'Get Location', action: `window.SWVLocation.getCurrentPosition((lat, lng, err) => alert('Lat: ' + lat + ', Lng: ' + lng + ', Err: ' + err))`, plugin: 'Location' }
+          { text: 'Show Toast', action: `window.Toast.show('Hello from Playground!')`, plugin: 'Toast' },
+          { text: 'Show Dialog', action: `window.Dialog.show({ title: 'Test', message: 'This is a native dialog.' }, res => console.log('Dialog result: ' + res))`, plugin: 'Dialog' },
+          { text: 'Get Location', action: `window.SWVLocation.getCurrentPosition((lat, lng, err) => { if(err) { window.Dialog.show({title: 'Location Error', message: err}); } else { window.Dialog.show({title: 'Location Success', message: 'Lat: ' + lat + ', Lng: ' + lng}); } })`, plugin: 'Location' }
           ];
           
           buttons.forEach(btnInfo => {

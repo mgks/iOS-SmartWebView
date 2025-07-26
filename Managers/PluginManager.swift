@@ -37,5 +37,18 @@ final class PluginManager {
     
     // --- Event Forwarding ---
     func webViewDidFinishLoad(url: URL) { for plugin in plugins.values { plugin.webViewDidFinishLoad(url: url) } }
-    func handleScriptMessage(message: WKScriptMessage) { for plugin in plugins.values { plugin.handleScriptMessage(message: message) } }
+    func handleScriptMessage(message: WKScriptMessage) {
+        // message.name is "toast", "dialog", "location" etc.
+        // Our plugin names are "Toast", "Dialog", "Location".
+        // We need to match them, case-insensitively for safety.
+        let handlerName = message.name.lowercased()
+        
+        for plugin in plugins.values {
+            // e.g. does "Toast".lowercased() == "toast" ?
+            if plugin.name.lowercased() == handlerName {
+                plugin.handleScriptMessage(message: message)
+                return // Stop after finding the correct handler
+            }
+        }
+    }
 }

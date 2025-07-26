@@ -3,7 +3,7 @@ import WebKit
 import UIKit
 
 class ToastPlugin: PluginInterface {
-    var name: String = "ToastPlugin"
+    var name: String = "Toast"
     private weak var webView: WKWebView?
 
     static func register() {
@@ -57,27 +57,64 @@ class ToastPlugin: PluginInterface {
         
         let toastLabel = UILabel()
         toastLabel.text = message
-        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.8) // Slightly more solid
         toastLabel.textColor = UIColor.white
         toastLabel.textAlignment = .center
-        toastLabel.font = UIFont.systemFont(ofSize: 14)
+        toastLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium) // A bit bolder
         toastLabel.alpha = 0.0
-        toastLabel.layer.cornerRadius = 10
+        toastLabel.layer.cornerRadius = 18 // More rounded for a "pill" shape
         toastLabel.clipsToBounds = true
+        
+        // Add padding inside the label
+        toastLabel.numberOfLines = 0 // Allow multiple lines
+        let horizontalPadding: CGFloat = 20.0
+        let verticalPadding: CGFloat = 10.0
         
         window.addSubview(toastLabel)
         
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             toastLabel.centerXAnchor.constraint(equalTo: window.centerXAnchor),
-            toastLabel.bottomAnchor.constraint(equalTo: window.safeAreaLayoutGuide.bottomAnchor, constant: -50),
+            toastLabel.bottomAnchor.constraint(equalTo: window.safeAreaLayoutGuide.bottomAnchor, constant: -60), // A bit higher
+            // Make the width dynamic but with a max limit
             toastLabel.widthAnchor.constraint(lessThanOrEqualTo: window.widthAnchor, constant: -40),
-            toastLabel.heightAnchor.constraint(equalToConstant: 40)
+            // REMOVE fixed height, let it be dynamic based on text
         ])
         
-        UIView.animate(withDuration: 0.5, animations: { toastLabel.alpha = 1.0 }) { _ in
-            UIView.animate(withDuration: 0.5, delay: 2.0, animations: { toastLabel.alpha = 0.0 }) { _ in
-                toastLabel.removeFromSuperview()
+        // Create an "inset" version of the label for padding
+        let toastContainer = UIView()
+        toastContainer.backgroundColor = .clear
+        toastContainer.addSubview(toastLabel)
+        window.addSubview(toastContainer)
+
+        toastContainer.translatesAutoresizingMaskIntoConstraints = false
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            // Pin toastLabel to its container with padding
+            toastLabel.topAnchor.constraint(equalTo: toastContainer.topAnchor, constant: verticalPadding),
+            toastLabel.bottomAnchor.constraint(equalTo: toastContainer.bottomAnchor, constant: -verticalPadding),
+            toastLabel.leadingAnchor.constraint(equalTo: toastContainer.leadingAnchor, constant: horizontalPadding),
+            toastLabel.trailingAnchor.constraint(equalTo: toastContainer.trailingAnchor, constant: -horizontalPadding),
+
+            // Position the container on the screen
+            toastContainer.centerXAnchor.constraint(equalTo: window.centerXAnchor),
+            toastContainer.bottomAnchor.constraint(equalTo: window.safeAreaLayoutGuide.bottomAnchor, constant: -60),
+            toastContainer.widthAnchor.constraint(lessThanOrEqualTo: window.widthAnchor, constant: -40),
+        ])
+
+        // We now animate the container, not the label directly
+        toastContainer.layer.cornerRadius = (toastLabel.font.pointSize + verticalPadding * 2) / 2
+        toastContainer.layer.masksToBounds = true
+        toastContainer.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastContainer.alpha = 0.0
+        
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseOut, animations: {
+            toastContainer.alpha = 1.0
+            toastContainer.transform = .identity
+        }) { _ in
+            UIView.animate(withDuration: 0.5, delay: 2.5, animations: { toastContainer.alpha = 0.0 }) { _ in
+                toastContainer.removeFromSuperview()
             }
         }
     }

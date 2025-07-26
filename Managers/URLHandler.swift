@@ -17,6 +17,14 @@ class URLHandler {
             }
             return true // We handled it.
         }
+        
+        // Handle FCM test notifications
+        if url.scheme == "fcm" {
+            if let firebasePlugin = PluginManager.shared.getPlugin(named: "Firebase") as? FirebasePlugin {
+                firebasePlugin.showTestNotification()
+            }
+            return true // We handled it.
+        }
 
         if urlString.starts(with: "share:") {
             let textToShare = urlString.replacingOccurrences(of: "share:", with: "")
@@ -27,13 +35,25 @@ class URLHandler {
             return true
         }
         
-        // ... (rest of the file is the same)
+        if urlString.starts(with: "print:") {
+            let printInfo = UIPrintInfo.printInfo()
+            printInfo.outputType = .general
+            printInfo.jobName = "SmartWebView Print"
+
+            let printController = UIPrintInteractionController.shared
+            printController.printInfo = printInfo
+            
+            // Use the webView's viewPrintFormatter for reliable printing
+            printController.printFormatter = webView.viewPrintFormatter()
+            
+            printController.present(animated: true, completionHandler: nil)
+            return true
+        }
+        
         if ["tel", "sms", "mailto"].contains(url.scheme), UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url); return true
         }
-        if urlString.starts(with: "print:") {
-            let printController = UIPrintInteractionController.shared; let printInfo = UIPrintInfo(dictionary:nil); printInfo.outputType = .general; printInfo.jobName = "SmartWebView Print"; printController.printInfo = printInfo; printController.printingItem = webView; printController.present(animated: true); return true
-        }
+
         if context.openExternalURLs, let host = url.host, host != context.host, !context.externalURLExceptionList.contains(host) {
             if UIApplication.shared.canOpenURL(url) { UIApplication.shared.open(url); return true }
         }

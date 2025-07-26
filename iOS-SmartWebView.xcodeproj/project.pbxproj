@@ -53,6 +53,7 @@
 		8F7E7BE42E341412002848D5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8F7E7BE62E34F09F002848D5 /* iOS-SmartWebView-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "iOS-SmartWebView-Info.plist"; sourceTree = "<group>"; };
 		8F7E7BE92E34F228002848D5 /* FirebasePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebasePlugin.swift; sourceTree = "<group>"; };
+		8F7E7BEB2E356644002848D5 /* iOS-SmartWebView.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "iOS-SmartWebView.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +80,7 @@
 		8F0C924F2E2822C00043A6D9 = {
 			isa = PBXGroup;
 			children = (
+				8F7E7BEB2E356644002848D5 /* iOS-SmartWebView.entitlements */,
 				8F7E7BE62E34F09F002848D5 /* iOS-SmartWebView-Info.plist */,
 				8F7E7BE12E34107B002848D5 /* README.md */,
 				8F7E7BE32E3411EB002848D5 /* .gitignore */,
@@ -384,6 +386,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "iOS-SmartWebView.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6HW5SN674F;
@@ -392,7 +395,10 @@
 				INFOPLIST_FILE = "iOS-SmartWebView-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Smart WebView";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to provide relevant content and services.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to let you take and upload photos or videos.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to provide location-based features and content.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need microphone access to record audio with your videos.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to let you select and upload photos or videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -419,6 +425,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "iOS-SmartWebView.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6HW5SN674F;
@@ -427,7 +434,10 @@
 				INFOPLIST_FILE = "iOS-SmartWebView-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Smart WebView";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to provide relevant content and services.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We need access to your camera to let you take and upload photos or videos.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to provide location-based features and content.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need microphone access to record audio with your videos.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to let you select and upload photos or videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
