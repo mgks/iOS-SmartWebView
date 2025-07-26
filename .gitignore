@@ -64,3 +64,8 @@ fastlane/test_output
 
 ProjectOverview.md
 GoogleService-Info.plist
+
+# Premium Plugins
+Plugins/DialogPlugin.swift
+Plugins/LocationPlugin.swift
+Plugins/RatingPlugin.swift
