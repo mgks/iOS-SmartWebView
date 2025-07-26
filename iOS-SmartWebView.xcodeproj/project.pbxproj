@@ -26,6 +26,7 @@
 		8F7E7BDD2E340CB0002848D5 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8F7E7BDC2E340CB0002848D5 /* FirebaseAuth */; };
 		8F7E7BDF2E340CB0002848D5 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 8F7E7BDE2E340CB0002848D5 /* FirebaseMessaging */; };
 		8F7E7BE52E341412002848D5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8F7E7BE42E341412002848D5 /* GoogleService-Info.plist */; };
+		8F7E7BEA2E34F228002848D5 /* FirebasePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F7E7BE92E34F228002848D5 /* FirebasePlugin.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,8 @@
 		8F7E7BE12E34107B002848D5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		8F7E7BE32E3411EB002848D5 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		8F7E7BE42E341412002848D5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		8F7E7BE62E34F09F002848D5 /* iOS-SmartWebView-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "iOS-SmartWebView-Info.plist"; sourceTree = "<group>"; };
+		8F7E7BE92E34F228002848D5 /* FirebasePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebasePlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -76,6 +79,7 @@
 		8F0C924F2E2822C00043A6D9 = {
 			isa = PBXGroup;
 			children = (
+				8F7E7BE62E34F09F002848D5 /* iOS-SmartWebView-Info.plist */,
 				8F7E7BE12E34107B002848D5 /* README.md */,
 				8F7E7BE32E3411EB002848D5 /* .gitignore */,
 				8F7E7BD12E34021A002848D5 /* ProjectOverview.md */,
@@ -127,6 +131,7 @@
 				8F0C92982E2976810043A6D9 /* RatingPlugin.swift */,
 				8F0C92962E29763F0043A6D9 /* LocationPlugin.swift */,
 				8F0C92942E2976060043A6D9 /* DialogPlugin.swift */,
+				8F7E7BE92E34F228002848D5 /* FirebasePlugin.swift */,
 			);
 			path = Plugins;
 			sourceTree = "<group>";
@@ -246,6 +251,7 @@
 				8F0C928B2E283C090043A6D9 /* ToastPlugin.swift in Sources */,
 				8F0C927A2E2839ED0043A6D9 /* ConfigLoader.swift in Sources */,
 				8F0C92992E2976810043A6D9 /* RatingPlugin.swift in Sources */,
+				8F7E7BEA2E34F228002848D5 /* FirebasePlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,8 +389,10 @@
 				DEVELOPMENT_TEAM = 6HW5SN674F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS-SmartWebView-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Smart WebView";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to provide relevant content and services.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -416,8 +424,10 @@
 				DEVELOPMENT_TEAM = 6HW5SN674F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS-SmartWebView-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Smart WebView";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to provide relevant content and services.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
