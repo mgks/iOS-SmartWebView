@@ -3,158 +3,253 @@ import WebKit
 import PhotosUI
 import UniformTypeIdentifiers
 
+// This class will hold our single WKWebView instance.
+// This ensures it's created only once for the lifetime of the view.
+class WebViewStore: ObservableObject {
+    let webView: WKWebView
+
+    init() {
+        let configuration = WKWebViewConfiguration()
+        // We will add the userContentController configuration within the Coordinator
+        self.webView = WKWebView(frame: .zero, configuration: configuration)
+    }
+}
+
 struct WebView: UIViewRepresentable {
     let url: URL
-    private let webView = WKWebView()
+    // Use a StateObject to ensure the store is created once per view lifecycle.
+    @StateObject private var webViewStore = WebViewStore()
 
-    // Creates the Coordinator instance that will act as a delegate for the WKWebView.
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        // Pass the webView from the store to the Coordinator.
+        Coordinator(self, webView: webViewStore.webView)
     }
 
-    // Creates and configures the initial WKWebView instance.
     func makeUIView(context: Context) -> WKWebView {
-        let swvContext = SWVContext.shared
-        let userContentController = WKUserContentController()
+        let webView = webViewStore.webView
         
-        // Register JavaScript message handlers for enabled plugins.
-        // This is the bridge for JavaScript to call native Swift code.
-        if swvContext.enabledPlugins.contains("Toast") { userContentController.add(context.coordinator, name: "toast") }
-        if swvContext.enabledPlugins.contains("Dialog") { userContentController.add(context.coordinator, name: "dialog") }
-        if swvContext.enabledPlugins.contains("Location") { userContentController.add(context.coordinator, name: "location") }
-        
-        webView.configuration.userContentController = userContentController
-        
-        // Assign the coordinator to handle webview events.
+        // The coordinator is now the single source of all delegates.
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         
         // Initialize all registered plugins, passing them the webview instance.
-        PluginManager.shared.initializePlugins(context: swvContext, webView: self.webView)
+        PluginManager.shared.initializePlugins(context: SWVContext.shared, webView: webView)
         
-        // Conditionally add the pull-to-refresh control based on the config.
-        if swvContext.pullToRefreshEnabled {
+        if SWVContext.shared.pullToRefreshEnabled {
             let refreshControl = UIRefreshControl()
             refreshControl.addTarget(context.coordinator, action: #selector(Coordinator.handleRefresh), for: .valueChanged)
             webView.scrollView.addSubview(refreshControl)
-            webView.scrollView.bounces = true // Must be true for the gesture to work.
+            webView.scrollView.bounces = true
         }
         
-        return self.webView
+        // Load the initial URL here, only once.
+        let request = URLRequest(url: url)
+        webView.load(request)
+        
+        return webView
     }
 
-    // Updates the view with new data. Called when the view's state changes.
+    // updateUIView should be mostly empty to prevent reloads on other state changes.
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        uiView.load(request)
+        // This is where you would handle updates if the URL could change.
+        // For our case, we load once in makeUIView, so this can be empty.
     }
     
     // The Coordinator class acts as a delegate bridge between the WKWebView and SwiftUI.
-    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler, WKUIDelegate, PHPickerViewControllerDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler, WKUIDelegate, PHPickerViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIDocumentPickerDelegate {
         var parent: WebView
+        var webView: WKWebView // Hold a direct reference to the webView
         private var filePickerCompletionHandler: (([URL]?) -> Void)?
 
-        init(_ parent: WebView) {
+        init(_ parent: WebView, webView: WKWebView) {
             self.parent = parent
+            self.webView = webView
+            super.init()
+            
+            // Add message handlers here in the coordinator's init.
+            // This guarantees they are ready before any JS can call them.
+            let swvContext = SWVContext.shared
+            let userContentController = self.webView.configuration.userContentController
+            if swvContext.enabledPlugins.contains("Toast") { userContentController.add(self, name: "toast") }
+            if swvContext.enabledPlugins.contains("Dialog") { userContentController.add(self, name: "dialog") }
+            if swvContext.enabledPlugins.contains("Location") { userContentController.add(self, name: "location") }
         }
         
-        // --- Navigation Decisions ---
+        // --- DELEGATE METHODS ---
         
-        // Intercept navigation actions before they are allowed.
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let url = navigationAction.request.url, URLHandler.handle(url: url, webView: webView) {
-                decisionHandler(.cancel) // URL was handled natively, so cancel the webview's navigation.
-                return
-            }
-            decisionHandler(.allow) // Let the webview proceed with the navigation.
-        }
-        
-        // Decide what to do with a navigation response (e.g., download or view).
-        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-            if !navigationResponse.canShowMIMEType {
-                decisionHandler(.download) // The content can't be shown, so treat it as a download.
-            } else {
-                decisionHandler(.allow) // The content can be shown in the webview.
-            }
-        }
-        
-        // Called when a download is started from a navigation response.
-        func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
-            download.delegate = self
-        }
-        
-        // Called when a page has finished loading.
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Stop the pull-to-refresh spinner if it's active.
             if let refreshControl = webView.scrollView.subviews.first(where: { $0 is UIRefreshControl }) as? UIRefreshControl {
                 refreshControl.endRefreshing()
             }
-            // Notify the PluginManager that the page has loaded.
+            
+            // Call our platform detection script
+            let script = "if (typeof setPlatform === 'function') { setPlatform('ios'); }"
+            webView.evaluateJavaScript(script, completionHandler: nil)
+
+            // Notify plugins that the page has loaded
             if let url = webView.url {
                 PluginManager.shared.webViewDidFinishLoad(url: url)
             }
         }
         
-        // --- JS -> Native Communication ---
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if let url = navigationAction.request.url, URLHandler.handle(url: url, webView: webView) {
+                decisionHandler(.cancel)
+                return
+            }
+            decisionHandler(.allow)
+        }
         
-        // Called when JavaScript posts a message to a registered handler.
+        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+            if !navigationResponse.canShowMIMEType {
+                decisionHandler(.download)
+            } else {
+                decisionHandler(.allow)
+            }
+        }
+        
+        func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) {
+            download.delegate = self
+        }
+        
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             PluginManager.shared.handleScriptMessage(message: message)
         }
         
-        // --- UI Actions ---
-        
-        // The action triggered by the pull-to-refresh control.
         @objc func handleRefresh() {
-            parent.webView.reload()
+            webView.reload()
         }
         
-        // Called when an <input type="file"> is clicked in the web page.
         func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping ([URL]?) -> Void) {
-            guard SWVContext.shared.fileUploadsEnabled else { completionHandler(nil); return }
+            guard SWVContext.shared.fileUploadsEnabled else {
+                completionHandler(nil)
+                return
+            }
             self.filePickerCompletionHandler = completionHandler
             
-            var config = PHPickerConfiguration()
-            config.selectionLimit = SWVContext.shared.multipleUploadsEnabled && parameters.allowsMultipleSelection ? 0 : 1
-            config.filter = .any(of: [.images, .videos])
+            let alert = UIAlertController(title: "Select Source", message: nil, preferredStyle: .actionSheet)
             
-            let picker = PHPickerViewController(configuration: config)
-            picker.delegate = self
-            
-            if let rootVC = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first?.rootViewController {
-                rootVC.present(picker, animated: true)
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                alert.addAction(UIAlertAction(title: "Camera", style: .default) { _ in
+                    self.showImagePicker(sourceType: .camera)
+                })
             }
+            
+            alert.addAction(UIAlertAction(title: "Photo Library", style: .default) { _ in
+                var config = PHPickerConfiguration(photoLibrary: .shared())
+                config.selectionLimit = SWVContext.shared.multipleUploadsEnabled && parameters.allowsMultipleSelection ? 0 : 1
+                config.filter = .any(of: [.images, .videos])
+                
+                let picker = PHPickerViewController(configuration: config)
+                picker.delegate = self
+                self.present(picker)
+            })
+            
+            alert.addAction(UIAlertAction(title: "Browse Files", style: .default) { _ in
+                let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+                documentPicker.delegate = self
+                documentPicker.allowsMultipleSelection = SWVContext.shared.multipleUploadsEnabled && parameters.allowsMultipleSelection
+                self.present(documentPicker)
+            })
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                self.filePickerCompletionHandler?(nil)
+            })
+            
+            if let popoverController = alert.popoverPresentationController {
+                popoverController.sourceView = webView
+                popoverController.sourceRect = CGRect(x: webView.bounds.midX, y: webView.bounds.midY, width: 0, height: 0)
+                popoverController.permittedArrowDirections = []
+            }
+            
+            self.present(alert)
         }
         
-        // Delegate method for when the user finishes selecting items in the photo picker.
+        private func present(_ viewController: UIViewController) {
+            if let rootVC = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first(where: \.isKeyWindow)?.rootViewController {
+                rootVC.present(viewController, animated: true)
+            }
+        }
+
+        private func showImagePicker(sourceType: UIImagePickerController.SourceType) {
+            let picker = UIImagePickerController()
+            picker.sourceType = sourceType
+            picker.delegate = self
+            picker.mediaTypes = [UTType.image.identifier, UTType.movie.identifier]
+            self.present(picker)
+        }
+        
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             picker.dismiss(animated: true)
-            guard !results.isEmpty else { filePickerCompletionHandler?(nil); return }
+            guard !results.isEmpty else {
+                filePickerCompletionHandler?(nil)
+                return
+            }
             
             var urls: [URL] = []
-            let group = DispatchGroup() // Use a DispatchGroup to wait for all files to be processed.
+            let group = DispatchGroup()
             
             for result in results {
                 group.enter()
-                result.itemProvider.loadFileRepresentation(forTypeIdentifier: UTType.item.identifier) { url, _ in
+                result.itemProvider.loadFileRepresentation(forTypeIdentifier: UTType.item.identifier) { url, error in
                     defer { group.leave() }
-                    if let url = url {
-                        // Copy the file to a temporary directory so the webview has permission to access it.
-                        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension(url.pathExtension)
-                        try? FileManager.default.copyItem(at: url, to: tempURL)
-                        urls.append(tempURL)
+                    guard let url = url, error == nil else { return }
+                    
+                    let tempDirectory = FileManager.default.temporaryDirectory
+                    let destinationURL = tempDirectory.appendingPathComponent(UUID().uuidString + "." + url.pathExtension)
+                    
+                    do {
+                        try FileManager.default.copyItem(at: url, to: destinationURL)
+                        urls.append(destinationURL)
+                    } catch {
+                        print("Error copying file: \(error)")
                     }
                 }
             }
             
             group.notify(queue: .main) {
-                self.filePickerCompletionHandler?(urls)
+                self.filePickerCompletionHandler?(urls.isEmpty ? nil : urls)
             }
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            picker.dismiss(animated: true)
+            
+            var fileURL: URL?
+            let tempDir = FileManager.default.temporaryDirectory
+            
+            if let image = info[.originalImage] as? UIImage, let data = image.jpegData(compressionQuality: 0.5) {
+                let tempURL = tempDir.appendingPathComponent(UUID().uuidString).appendingPathExtension("jpg")
+                try? data.write(to: tempURL)
+                fileURL = tempURL
+            } else if let videoURL = info[.mediaURL] as? URL {
+                let tempURL = tempDir.appendingPathComponent(UUID().uuidString).appendingPathExtension(videoURL.pathExtension)
+                try? FileManager.default.copyItem(at: videoURL, to: tempURL)
+                fileURL = tempURL
+            }
+            
+            if let url = fileURL {
+                self.filePickerCompletionHandler?([url])
+            } else {
+                self.filePickerCompletionHandler?(nil)
+            }
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            picker.dismiss(animated: true)
+            self.filePickerCompletionHandler?(nil)
+        }
+        
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            self.filePickerCompletionHandler?(urls)
+        }
+        
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+            self.filePickerCompletionHandler?(nil)
         }
     }
 }
 
-// Extension to handle download delegate methods.
 extension WebView.Coordinator: WKDownloadDelegate {
     func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String, completionHandler: @escaping (URL?) -> Void) {
         let docsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -164,6 +259,5 @@ extension WebView.Coordinator: WKDownloadDelegate {
     
     func downloadDidFinish(_ download: WKDownload) {
         print("Download finished.")
-        // A good place to trigger a "Download Complete" toast.
     }
 }
