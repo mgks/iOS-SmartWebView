@@ -76,9 +76,7 @@ class ToastPlugin: PluginInterface {
         NSLayoutConstraint.activate([
             toastLabel.centerXAnchor.constraint(equalTo: window.centerXAnchor),
             toastLabel.bottomAnchor.constraint(equalTo: window.safeAreaLayoutGuide.bottomAnchor, constant: -60), // A bit higher
-            // Make the width dynamic but with a max limit
             toastLabel.widthAnchor.constraint(lessThanOrEqualTo: window.widthAnchor, constant: -40),
-            // REMOVE fixed height, let it be dynamic based on text
         ])
         
         // Create an "inset" version of the label for padding
